@@ -25,12 +25,15 @@ class RandomChar extends Component {
     clearInterval(this.timerId);
   }
 
+  // когда персонаж в процессе загрузки, чтобы этот метод отрабатывал,
+  // напр, при нажатии на кнопку для смены персонажа
   onCharacterLoading = () => {
     this.setState({
       loading: true,
     });
   };
 
+  // когда персонаж загрузился
   onCharacterLoaded = (character) => {
     this.setState({ character, loading: false }); // сокращенно от { character: character } т.к. название св-ва стейт и аргумента совпадают
   };
