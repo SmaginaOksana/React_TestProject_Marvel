@@ -3,8 +3,12 @@ import AppHeader from "../appHeader/AppHeader";
 import RandomChar from "../randomChar/RandomChar";
 import CharList from "../charList/CharList";
 import CharInfo from "../charInfo/CharInfo";
-
+import ComicsList from "../comicsList/ComicsList";
+import SingleComic from "../singleComic/SingleComic";
 import decoration from "../../resources/img/vision.png";
+import ErrorBoundary from "../ErrorBoundary/ErrorBoundary";
+import { MainPage, ComicsPage } from "../pages";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // class App extends Component {
 //   state = {
@@ -36,27 +40,19 @@ import decoration from "../../resources/img/vision.png";
 // export default App;
 
 const App = () => {
-  const [selectedCharacter, setSelectedCharacter] = useState(null);
-
-  const onCharacterSelected = (id) => {
-    setSelectedCharacter(id);
-  };
-
-  {
-    return (
+  return (
+    <Router>
       <div className="app">
         <AppHeader />
         <main>
-          <RandomChar />
-          <div className="char__content">
-            <CharList onCharacterSelected={onCharacterSelected} />
-            <CharInfo characterId={selectedCharacter} />
-          </div>
-          <img className="bg-decoration" src={decoration} alt="vision" />
+          <Routes>
+            <Route path="/" element={<MainPage />} />
+            <Route path="/comics" element={<ComicsPage />} />
+          </Routes>
         </main>
       </div>
-    );
-  }
+    </Router>
+  );
 };
 
 export default App;

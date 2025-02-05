@@ -4,6 +4,7 @@ import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import Skeleton from "../skeleton/Skeleton";
 import "./charInfo.scss";
+import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 
 // class CharInfo extends Component {
 //   state = {
@@ -123,10 +124,9 @@ import "./charInfo.scss";
 
 const CharInfo = ({ characterId }) => {
   const [character, setCharacter] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
 
-  const marvelService = new MarvelService();
+  const { loading, error, getCharacter, clearError } =
+    useHookHTTPForMarvelService();
 
   useEffect(() => {
     updateChar();
@@ -137,26 +137,15 @@ const CharInfo = ({ characterId }) => {
       return;
     }
 
-    onCharacterLoading();
+    clearError(); // на случай, если описание персонажа не найдено в БД и не загрузилось,
+    // то выскочит ошибка (у нас в catch в хуке), то код дальше не пойдет, поэтому очищаем,
+    // чтобы при след нажании на для загрузки инфы нового персонажа она загрузилась
 
-    marvelService
-      .getCharacter(characterId)
-      .then(onCharacterLoaded)
-      .catch(onError);
-  };
-
-  const onCharacterLoading = () => {
-    setLoading(true);
+    getCharacter(characterId).then(onCharacterLoaded);
   };
 
   const onCharacterLoaded = (character) => {
     setCharacter(character); // сокращенно от { character: character } т.к. название св-ва стейт и аргумента совпадают
-    setLoading(false);
-  };
-
-  const onError = () => {
-    setLoading(false);
-    setError(true);
   };
 
   const skeleton = character || loading || error ? null : <Skeleton />;
@@ -169,7 +158,7 @@ const CharInfo = ({ characterId }) => {
     <div className="char__info">
       {skeleton}
       {errorMessage}
-      {spinner}
+      {/* {spinner} */}
       {content}
     </div>
   );

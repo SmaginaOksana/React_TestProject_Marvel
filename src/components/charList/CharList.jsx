@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import MarvelService from "../../services/MarvelService";
+import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 
 import "./charList.scss";
 
@@ -154,57 +155,52 @@ import "./charList.scss";
 
 const CharList = (props) => {
   const [characters, setCharacters] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [newItemsLoading, setNewItemsLoading] = useState(false);
   const [offset, setOffset] = useState(210);
   const [itemsEnded, setItemsEnded] = useState(false);
 
-  const marvelService = new MarvelService();
+  const { loading, error, getAllCharacters } = useHookHTTPForMarvelService();
 
   useEffect(() => {
-    onRequest();
+    onRequest(offset, true);
   }, []);
 
   // подгрузка доп. 9 штук персонажей по клику на кнопку
-  const onRequest = (offset) => {
+  const onRequest = (offset, flag) => {
     // при запросе новых персонажей св-во меняется, чтобы кнопку сделать неактивной на период загрузки
-    onCharacterListLoading(); // загрузка персонажей в процессе
+    // загрузка персонажей в процессе
+    // если это загрузка доп.персонажей, то передаем флаг в ф-ю request при нажатии на кнопку,
+    // чтобы при новом запросе персонажей при смене loading на true (у нас в хуке так настроено)
+    // не включался спиннер и все полностью персонажи не перегружались на стр
+    flag ? setNewItemsLoading(false) : setNewItemsLoading(true);
 
-    marvelService
-      .getAllCharacters(offset)
-      .then(onCharactersLoaded) // персонажи загружены успешно
-      .catch(onError); // произошла ошибка
-  };
-
-  const onCharacterListLoading = () => {
-    setNewItemsLoading(true);
+    getAllCharacters(offset).then(onCharactersLoaded); // персонажи загружены успешно
   };
 
   const onCharactersLoaded = (newCharacters) => {
     // проверяем, если с сервера пришло меньше 9 персонажей, значит их там больше нет,
     //и необходимо удалить кнопку для последующих запросов
-    let ended = false;
-    if (newCharacters.length < 9) {
-      ended = true;
-    }
+    let ended = newCharacters.length < 9; // запишется true/false
 
-    // условие, чтобы отменить первичный двойной запрос (в стрикт мод) на сервер после монтирования компонента
-    // т.к. при двойном персонажи на странице задваивались
-    if (characters[0]?.id === newCharacters[0].id) {
-      return;
-    }
-
-    setCharacters((characters) => [...characters, ...newCharacters]);
-    setLoading(false);
     setNewItemsLoading(false);
-    setOffset((offset) => offset + 9);
     setItemsEnded(ended);
-  };
 
-  const onError = () => {
-    setError(true);
-    setLoading(false);
+    setCharacters((characters) => {
+      // проверка на дублирование персонажей при первичном монтировании компонента
+      // (в стрикт моде useEffect исполняется 2 раза, поэтому 2 запроса и 2 одинаковых массива)
+      let newStateCharacters =
+        characters[0]?.id === newCharacters[0].id
+          ? [...newCharacters]
+          : [...characters, ...newCharacters];
+      return newStateCharacters;
+    });
+
+    setOffset((offset) => {
+      // проверка на прибавление 9 лишний раз при первичном монтировании компонента
+      // (в стрикт моде useEffect исполняется 2 раза, поэтому 2 раза прибавляет девятку вместо 1 раза)
+      let newOffset = offset === 219 ? offset : offset + 9;
+      return newOffset;
+    });
   };
 
   const itemRefs = useRef([]); // массив для ref-ов
@@ -220,34 +216,32 @@ const CharList = (props) => {
 
   const errorMessage = error ? <ErrorMessage /> : null;
 
-  const spinner = loading ? <Spinner /> : null;
+  const spinner = loading && !newItemsLoading ? <Spinner /> : null;
 
-  const items = !(loading || error)
-    ? characters.map((item, i) => {
-        return (
-          <li
-            ref={(item) => (itemRefs.current[i] = item)}
-            className="char__item"
-            key={item.id}
-            onClick={() => {
-              props.onCharacterSelected(item.id);
-              focusOnItem(i);
-            }}
-          >
-            <img
-              src={item.thumbnail}
-              alt={item.name}
-              style={{
-                objectFit: item.thumbnail.includes("not_available")
-                  ? "contain"
-                  : "cover",
-              }}
-            />
-            <div className="char__name">{item.name}</div>
-          </li>
-        );
-      })
-    : null;
+  const items = characters.map((item, i) => {
+    return (
+      <li
+        ref={(item) => (itemRefs.current[i] = item)}
+        className="char__item"
+        key={item.id}
+        onClick={() => {
+          props.onCharacterSelected(item.id);
+          focusOnItem(i);
+        }}
+      >
+        <img
+          src={item.thumbnail}
+          alt={item.name}
+          style={{
+            objectFit: item.thumbnail.includes("not_available")
+              ? "contain"
+              : "cover",
+          }}
+        />
+        <div className="char__name">{item.name}</div>
+      </li>
+    );
+  });
 
   return (
     <div className="char__list">
@@ -261,7 +255,7 @@ const CharList = (props) => {
         disabled={newItemsLoading} // когда в позиции true, то кнопка неактивна
         style={{ display: itemsEnded ? "none" : "block" }}
         onClick={() => {
-          onRequest(offset); // по клику запрашиваем еще 9 персонажей
+          onRequest(offset, false); // по клику запрашиваем еще 9 персонажей
         }}
       >
         <div className="inner">load more</div>

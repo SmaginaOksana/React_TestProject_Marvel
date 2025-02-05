@@ -4,6 +4,7 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import "./randomChar.scss";
 import mjolnir from "../../resources/img/mjolnir.png";
 import MarvelService from "../../services/MarvelService";
+import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 
 // class RandomChar extends Component {
 //   state = {
@@ -134,10 +135,9 @@ import MarvelService from "../../services/MarvelService";
 
 const RandomChar = () => {
   const [character, setCharacter] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
-  const marvelService = new MarvelService();
+  const { loading, error, getCharacter, clearError } =
+    useHookHTTPForMarvelService();
 
   useEffect(() => {
     updateChar();
@@ -148,34 +148,21 @@ const RandomChar = () => {
     };
   }, []);
 
-  // когда персонаж в процессе загрузки, чтобы этот метод отрабатывал,
-  // напр, при нажатии на кнопку для смены персонажа
-  const onCharacterLoading = () => {
-    setLoading(true);
-  };
-
   // когда персонаж загрузился
   const onCharacterLoaded = (character) => {
     setCharacter(character);
-    setLoading(false);
-  };
-
-  const onError = () => {
-    setLoading(false);
-    setError(true);
   };
 
   const updateChar = () => {
+    clearError(); // на случай, если персонаж не найден в БД и не загрузился,
+    // то выскочит ошибка (у нас в catch в хуке), то код дальше не пойдет, поэтому очищаем,
+    // чтобы при след нажании на "try it" для загрузки нового персонажа он загрузился
     const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-    onCharacterLoading();
-    // MarvelService.getCharacter(id).then((res) => {
-    marvelService
-      .getCharacter(id)
-      .then(
-        onCharacterLoaded // т.к. у нас в then передается ссылка на ф-ю,
-        // то можем не исп-ть call-back с responce, аргумент responce автом-ки передастся в эту ф-ю
-      )
-      .catch(onError);
+
+    getCharacter(id).then(
+      onCharacterLoaded // т.к. у нас в then передается ссылка на ф-ю,
+      // то можем не исп-ть call-back с responce, аргумент responce автом-ки передастся в эту ф-ю
+    );
   };
 
   const errorMessage = error ? <ErrorMessage /> : null;
@@ -207,10 +194,10 @@ const RandomChar = () => {
 
 const View = ({ char }) => {
   const { name, description, thumbnail, homepage, wiki } = char;
-  const newDescription = description.length
+  const newDescription = description?.length
     ? description.slice(0, 150) + " ..."
     : null;
-  const styleOfThumbnail = thumbnail.includes("not_available")
+  const styleOfThumbnail = thumbnail?.includes("not_available")
     ? "contain"
     : "cover";
 
