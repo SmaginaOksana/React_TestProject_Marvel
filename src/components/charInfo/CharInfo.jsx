@@ -1,10 +1,12 @@
 import { Component, useEffect, useState } from "react";
+
 import MarvelService from "../../services/MarvelService";
+import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
 import Skeleton from "../skeleton/Skeleton";
+
 import "./charInfo.scss";
-import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 
 // class CharInfo extends Component {
 //   state = {
@@ -158,7 +160,7 @@ const CharInfo = ({ characterId }) => {
     <div className="char__info">
       {skeleton}
       {errorMessage}
-      {/* {spinner} */}
+      {spinner}
       {content}
     </div>
   );

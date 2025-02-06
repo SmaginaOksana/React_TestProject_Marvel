@@ -1,26 +1,30 @@
 import { useEffect, useState } from "react";
-import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
-import Spinner from "../spinner/Spinner";
-import ErrorMessage from "../errorMessage/ErrorMessage";
+import { useParams, NavLink } from "react-router-dom";
 
-import "./singleComic.scss";
+import useHookHTTPForMarvelService from "../../../services/UseHookHTTPForMarvelService";
+import Spinner from "../../spinner/Spinner";
+import ErrorMessage from "../../errorMessage/ErrorMessage";
 
-const SingleComic = ({ selectedComic }) => {
+import "./SingleComicPage.scss";
+
+const SingleComicPage = () => {
+  const { comicId } = useParams();
+
   const [singleComic, setSingleComic] = useState({});
 
-  const { loading, error, getComics, clearError } =
+  const { loading, error, getComic, clearError } =
     useHookHTTPForMarvelService();
 
   useEffect(() => {
-    onRequest(selectedComic);
-  }, [selectedComic]);
+    updateComic();
+  }, [comicId]);
 
-  const onRequest = (selectedComic) => {
-    getComics(selectedComic).then(comicLoaded);
+  const updateComic = () => {
+    clearError();
+    getComic(comicId).then(onComicLoaded);
   };
 
-  const comicLoaded = (comic) => {
-    clearError();
+  const onComicLoaded = (comic) => {
     setSingleComic({ ...comic });
   };
 
@@ -41,9 +45,9 @@ const SingleComic = ({ selectedComic }) => {
           <p className="single-comic__descr">Language: {language}</p>
           <div className="single-comic__price">{price} $</div>
         </div>
-        <a href="#" className="single-comic__back">
+        <NavLink to="/comics" className="single-comic__back">
           Back to all
-        </a>
+        </NavLink>
       </div>
     ) : null;
 
@@ -56,4 +60,4 @@ const SingleComic = ({ selectedComic }) => {
   );
 };
 
-export default SingleComic;
+export default SingleComicPage;

@@ -4,10 +4,11 @@ import RandomChar from "../randomChar/RandomChar";
 import CharList from "../charList/CharList";
 import CharInfo from "../charInfo/CharInfo";
 import ComicsList from "../comicsList/ComicsList";
-import SingleComic from "../singleComic/SingleComic";
 import decoration from "../../resources/img/vision.png";
 import ErrorBoundary from "../ErrorBoundary/ErrorBoundary";
-import { MainPage, ComicsPage } from "../pages";
+import { MainPage, ComicsPage, SingleComicPage } from "../pages";
+import Page404 from "../pages/Page404";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // class App extends Component {
@@ -48,6 +49,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/comics" element={<ComicsPage />} />
+            <Route path="/comics/:comicId" element={<SingleComicPage />} />
+            <Route path="*" element={<Page404 />} />
           </Routes>
         </main>
       </div>

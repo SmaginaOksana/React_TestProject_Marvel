@@ -30,7 +30,7 @@ const useHookHTTPForMarvelService = () => {
     return res.data.results.map(_transformComics);
   };
 
-  const getComics = async (id) => {
+  const getComic = async (id) => {
     if (!id) {
       return;
     }
@@ -75,7 +75,7 @@ const useHookHTTPForMarvelService = () => {
     getCharacter,
     clearError,
     getAllComics,
-    getComics,
+    getComic,
   };
 };
 

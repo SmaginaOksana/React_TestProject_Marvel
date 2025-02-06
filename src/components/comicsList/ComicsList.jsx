@@ -3,8 +3,9 @@ import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelServ
 import { useEffect, useState } from "react";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
+import { NavLink } from "react-router-dom";
 
-const ComicsList = ({ setSelectedComic }) => {
+const ComicsList = () => {
   const [allComics, setAllComics] = useState([]);
   const [newItemsLoading, setNewItemsLoading] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -53,12 +54,12 @@ const ComicsList = ({ setSelectedComic }) => {
   const content = allComics?.map((item, i) => {
     const { thumbnail, id, title, price } = item;
     return (
-      <li className="comics__item" key={i} onClick={() => setSelectedComic(id)}>
-        <a href="#">
+      <li className="comics__item" key={i}>
+        <NavLink to={`/comics/${id}`}>
           <img src={thumbnail} alt={title} className="comics__item-img" />
           <div className="comics__item-name">{title}</div>
           <div className="comics__item-price">{price} $</div>
-        </a>
+        </NavLink>
       </li>
     );
   });
