@@ -216,10 +216,6 @@ const CharList = (props) => {
     itemRefs.current[id].focus();
   };
 
-  const errorMessage = error ? <ErrorMessage /> : null;
-
-  const spinner = loading && !newItemsLoading ? <Spinner /> : null;
-
   const renderItems = (arr) => {
     const items = arr.map((item, i) => {
       return (
@@ -262,6 +258,8 @@ const CharList = (props) => {
   };
 
   const items = renderItems(characters);
+  const errorMessage = error ? <ErrorMessage /> : null;
+  const spinner = loading && !newItemsLoading ? <Spinner /> : null;
 
   return (
     <>

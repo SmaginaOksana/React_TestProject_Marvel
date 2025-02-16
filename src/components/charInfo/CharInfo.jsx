@@ -1,5 +1,6 @@
 import { Component, useEffect, useState } from "react";
 
+import setContent from "../../utils/setContent";
 import MarvelService from "../../services/MarvelService";
 import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 import Spinner from "../spinner/Spinner";
@@ -127,8 +128,10 @@ import "./charInfo.scss";
 const CharInfo = ({ characterId }) => {
   const [character, setCharacter] = useState(null);
 
-  const { loading, error, getCharacter, clearError } =
-    useHookHTTPForMarvelService();
+  // const { loading, error, getCharacter, clearError } =
+  //   useHookHTTPForMarvelService();
+  const { getCharacter, clearError, process, setProcess } =
+    useHookHTTPForMarvelService(); // for state-machine
 
   useEffect(() => {
     updateChar();
@@ -141,33 +144,43 @@ const CharInfo = ({ characterId }) => {
 
     clearError(); // на случай, если описание персонажа не найдено в БД и не загрузилось,
     // то выскочит ошибка (у нас в catch в хуке), то код дальше не пойдет, поэтому очищаем,
-    // чтобы при след нажании на для загрузки инфы нового персонажа она загрузилась
+    // чтобы при след нажании для загрузки инфы нового персонажа она загрузилась
 
-    getCharacter(characterId).then(onCharacterLoaded);
+    getCharacter(characterId)
+      .then(onCharacterLoaded)
+      .then(() => setProcess("confirmed")); // for state-machine
+    // т.к. загрузка данных с сервера у нас асинхронная, то мы не можем менять состояние
+    // process (confirmed) раньше, чем данные получены (в нашем кастомном хуке http.hook),
+    // т.к. в противном случае на стадии switch case в ф-и setContent запишется
+    // пустой массив с character поэтому состояние process меняем здесь
+    // после получения данных с сервера
   };
 
   const onCharacterLoaded = (character) => {
     setCharacter(character); // сокращенно от { character: character } т.к. название св-ва стейт и аргумента совпадают
   };
 
-  const skeleton = character || loading || error ? null : <Skeleton />;
-  const errorMessage = error ? <ErrorMessage /> : null;
-  const spinner = loading ? <Spinner /> : null;
-  const content =
-    !(loading || error) && character ? <View character={character} /> : null;
+  // const skeleton = character || loading || error ? null : <Skeleton />;
+  // const errorMessage = error ? <ErrorMessage /> : null;
+  // const spinner = loading ? <Spinner /> : null;
+  // const content =
+  //   !(loading || error) && character ? <View character={character} /> : null;
 
   return (
     <div className="char__info">
-      {skeleton}
+      {/* {skeleton}
       {errorMessage}
       {spinner}
-      {content}
+      {content} */}
+
+      {/* for state-machine*/}
+      {setContent(process, View, character)}
     </div>
   );
 };
 
-const View = ({ character }) => {
-  const { name, description, thumbnail, homepage, wiki, comics } = character;
+const View = ({ data }) => {
+  const { name, description, thumbnail, homepage, wiki, comics } = data;
 
   const styleOfThumbnail = thumbnail.includes("not_available")
     ? "contain"
