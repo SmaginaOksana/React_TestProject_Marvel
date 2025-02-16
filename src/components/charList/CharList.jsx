@@ -230,7 +230,7 @@ const CharList = (props) => {
             }}
             onKeyDown={(e) => {
               if (e.key === " " || e.key === "Enter") {
-                props.onCharSelected(item.id);
+                props.onCharacterSelected(item.id);
                 focusOnItem(i);
               }
             }}
