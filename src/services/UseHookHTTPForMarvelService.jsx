@@ -5,7 +5,7 @@ const useHookHTTPForMarvelService = () => {
 
   const _apiBase = `https://gateway.marvel.com/v1/public/`;
   const _apiKey = `de5c6b9cf58378ed1e0c9aea72c2dd20`;
-  const _baseOffset = 210; // подгружка персонажей, начиная с 210-го
+  const _baseOffset = 210; // подгрузка персонажей, начиная с 210-го
 
   const getAllCharacters = async (offset = _baseOffset) => {
     const res = await request(
@@ -14,6 +14,13 @@ const useHookHTTPForMarvelService = () => {
 
     // запускаем метод transform на каждом элементе массива res с помощью map
     // т.е. из каждого эл-та массива создастся объект в нужном нам виде и сохранится в новый массив
+    return res.data.results.map(_transformCharacter);
+  };
+
+  const getCharacterByName = async (name) => {
+    const res = await request(
+      `${_apiBase}characters?name=${name}&apikey=${_apiKey}`
+    );
     return res.data.results.map(_transformCharacter);
   };
 
@@ -72,6 +79,7 @@ const useHookHTTPForMarvelService = () => {
     loading,
     error,
     getAllCharacters,
+    getCharacterByName,
     getCharacter,
     clearError,
     getAllComics,

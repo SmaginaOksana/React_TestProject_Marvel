@@ -1,9 +1,11 @@
 import { Component, useEffect, useState, useRef } from "react";
 import PropTypes from "prop-types";
+import { CSSTransition, TransitionGroup } from "react-transition-group";
+
+import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
+import MarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import MarvelService from "../../services/MarvelService";
-import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 
 import "./charList.scss";
 
@@ -177,7 +179,7 @@ const CharList = (props) => {
     getAllCharacters(offset).then(onCharactersLoaded); // персонажи загружены успешно
   };
 
-  const onCharactersLoaded = (newCharacters) => {
+  const onCharactersLoaded = async (newCharacters) => {
     // проверяем, если с сервера пришло меньше 9 персонажей, значит их там больше нет,
     //и необходимо удалить кнопку для последующих запросов
     let ended = newCharacters.length < 9; // запишется true/false
@@ -218,49 +220,67 @@ const CharList = (props) => {
 
   const spinner = loading && !newItemsLoading ? <Spinner /> : null;
 
-  const items = characters.map((item, i) => {
+  const renderItems = (arr) => {
+    const items = arr.map((item, i) => {
+      return (
+        <CSSTransition key={item.id} timeout={500} classNames="char__item">
+          <li
+            ref={(item) => (itemRefs.current[i] = item)}
+            className="char__item"
+            key={item.id}
+            onClick={() => {
+              props.onCharacterSelected(item.id);
+              focusOnItem(i);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === " " || e.key === "Enter") {
+                props.onCharSelected(item.id);
+                focusOnItem(i);
+              }
+            }}
+          >
+            <img
+              src={item.thumbnail}
+              alt={item.name}
+              style={{
+                objectFit: item.thumbnail.includes("not_available")
+                  ? "contain"
+                  : "cover",
+              }}
+            />
+            <div className="char__name">{item.name}</div>
+          </li>
+        </CSSTransition>
+      );
+    });
+
     return (
-      <li
-        ref={(item) => (itemRefs.current[i] = item)}
-        className="char__item"
-        key={item.id}
-        onClick={() => {
-          props.onCharacterSelected(item.id);
-          focusOnItem(i);
-        }}
-      >
-        <img
-          src={item.thumbnail}
-          alt={item.name}
-          style={{
-            objectFit: item.thumbnail.includes("not_available")
-              ? "contain"
-              : "cover",
-          }}
-        />
-        <div className="char__name">{item.name}</div>
-      </li>
+      <ul className="char__grid">
+        <TransitionGroup component={null}>{items}</TransitionGroup>
+      </ul>
     );
-  });
+  };
+
+  const items = renderItems(characters);
 
   return (
-    <div className="char__list">
-      <ul className="char__grid">
+    <>
+      <div className="char__list">
         {errorMessage}
         {spinner}
         {items}
-      </ul>
-      <button
-        className="button button__main button__long"
-        disabled={newItemsLoading} // когда в позиции true, то кнопка неактивна
-        style={{ display: itemsEnded ? "none" : "block" }}
-        onClick={() => {
-          onRequest(offset, false); // по клику запрашиваем еще 9 персонажей
-        }}
-      >
-        <div className="inner">load more</div>
-      </button>
-    </div>
+        <button
+          className="button button__main button__long"
+          disabled={newItemsLoading} // когда в позиции true, то кнопка неактивна
+          style={{ display: itemsEnded ? "none" : "block" }}
+          onClick={() => {
+            onRequest(offset, false); // по клику запрашиваем еще 9 персонажей
+          }}
+        >
+          <div className="inner">load more</div>
+        </button>
+      </div>
+    </>
   );
 };
 

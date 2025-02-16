@@ -2,6 +2,7 @@ import ErrorMessage from "../errorMessage/ErrorMessage";
 import { NavLink } from "react-router-dom";
 
 const Page404 = () => {
+  console.log("error");
   return (
     <div>
       <ErrorMessage />
@@ -9,6 +10,7 @@ const Page404 = () => {
         Page doesn't exist
       </p>
       <NavLink
+        to="/"
         style={{
           display: "block",
           textAlign: "center",
@@ -16,7 +18,6 @@ const Page404 = () => {
           fontSize: "24px",
           marginTop: "30px",
         }}
-        to="/"
       >
         Back to main page
       </NavLink>

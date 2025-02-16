@@ -1,9 +1,10 @@
-import "./comicsList.scss";
+import { NavLink } from "react-router-dom";
 import useHookHTTPForMarvelService from "../../services/UseHookHTTPForMarvelService";
 import { useEffect, useState } from "react";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
-import { NavLink } from "react-router-dom";
+
+import "./comicsList.scss";
 
 const ComicsList = () => {
   const [allComics, setAllComics] = useState([]);
